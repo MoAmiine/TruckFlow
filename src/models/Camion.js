@@ -20,7 +20,7 @@ const camionSchema = new mongoose.Schema({
     },
 
     kilometrageActuel: {
-        Type: Number,
+        type: Number,
         default: 0
     },
 
