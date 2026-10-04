@@ -37,7 +37,7 @@ async function login(email, password) {
 }
 
 async function register(userData) {
-    const usedEmail = await User.findOne({ email });
+    const usedEmail = await User.findOne({ email: userData.email });
     if (usedEmail) {
         throw new ApiError('email already used', 400)
     }
