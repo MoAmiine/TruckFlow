@@ -23,7 +23,7 @@ async function login(email, password) {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    user.refreshToken = refreshToken; 
+    user.refreshToken = refreshToken;
     await user.save();
 
     return {
@@ -36,4 +36,20 @@ async function login(email, password) {
     }
 }
 
-module.exports = { login }
+async function register(userData) {
+    const usedEmail = await User.findOne({ email });
+    if (usedEmail) {
+        throw new ApiError('email already used', 400)
+    }
+    const newUser = await User.create(userData)
+
+    return {
+        id: newUser._id,
+        nom: newUser.nom,
+        prenom: newUser.prenom,
+        email: newUser.email,
+        role: newUser.role
+    }
+}
+
+module.exports = { login, register }
