@@ -1,0 +1,19 @@
+$kind: http-request
+url: http://localhost:5001/api/v1/users/chauffeurs
+method: POST
+headers:
+  Authorization: Bearer <{{json_web_token_17o1}}>
+body:
+  type: json
+  content: "{\r
+
+    \  \"nom\": \"Bennani\",\r
+
+    \  \"prenom\": \"Karim\",\r
+
+    \  \"email\": \"karim@truckflow.com\",\r
+
+    \  \"motDePasse\": \"karim123456\"\r
+
+    }"
+order: 1791203044916

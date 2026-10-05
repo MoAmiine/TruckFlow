@@ -1,2 +1,11 @@
 $kind: collection
-name: TruckFlow
+variables:
+  - key: json_web_token_17o1
+    secret: true
+    disabled: false
+  - key: bearer_token_0c7t
+    secret: true
+    disabled: false
+  - key: json_web_token_0jlu
+    secret: true
+    disabled: false
