@@ -23,4 +23,7 @@ async function getAllChauffeurs(){
 
 async function changerStatutChauffeur(id, newStatut){
     const updateId = await User.findByIdAndUpdate(id, {statut: newStatut}, {new: true})
+    return updateId;
 }
+
+module.exports = { createChauffeur, getAllChauffeurs, changerStatutChauffeur }
