@@ -21,3 +21,6 @@ async function getAllChauffeurs(){
     return chauffeurs;
 }
 
+async function changerStatutChauffeur(id, newStatut){
+    const updateId = await User.findByIdAndUpdate(id, {statut: newStatut}, {new: true})
+}
