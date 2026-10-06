@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:5001/api/v1/camions/6ac50d483ffb5ddaaf3de3be/archive
+method: GET
+order: 366354407932117

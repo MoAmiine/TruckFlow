@@ -5,12 +5,12 @@ const { verifyAccessToken } = require('../middlewares/auth.middleware');
 const { restrictTo } = require('../middlewares/role.middleware');
 
 router.use(verifyAccessToken);
-router.use(restrictTo);
+router.use(restrictTo('admin'));
 
-router.post('/camion', camionController.createCamion);
-router.get('/camion', camionController.getAllCamions);
-router.get('/camion/:id', camionController.getCamionById);
-router.put('/camion/:id/update', camionController.updateCamion);
-router.patch('camion/:id', camionController.archiverCamion);
+router.post('/', camionController.createCamion);
+router.get('/', camionController.getAllCamions);
+router.get('/:id', camionController.getCamionById);
+router.put('/:id/update', camionController.updateCamion);
+router.patch('/:id/archive', camionController.archiverCamion);
 
 module.exports = router

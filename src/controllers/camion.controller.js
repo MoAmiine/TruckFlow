@@ -5,7 +5,7 @@ const camionService = require('../services/camion.service')
 async function createCamion(req, res, next) {
     try {
         const camion = await camionService.createCamion(req.body);
-        res.status(201).json({ statut: 'success', data: camion }); 7
+        res.status(201).json({ statut: 'success', data: camion }); 
     } catch (err) {
         next(err);
     }
@@ -22,18 +22,18 @@ async function getAllCamions(req, res, next) {
 
 async function getCamionById(req, res, next) {
     try {
-        const camion = camionService.getCamionById(req.params)
+        const camion = await camionService.getCamionById(req.params.id)
         res.status(200).json({ status: 'success', data: camion })
     } catch (err) {
         next(err)
     }
 }
 
-async function updateCamion(res, req, next) {
-    const id = req.params;
+async function updateCamion(req, res, next) {
+    const { id } = req.params;
     const data = req.body;
     try {
-        const newCamion = camionService.updateCamion(id, data)
+        const newCamion = await camionService.updateCamion(id, data)
         res.status(200).json({ statut: 'success', camion: newCamion })
     } catch (err) {
         next(err)
@@ -42,7 +42,7 @@ async function updateCamion(res, req, next) {
 
 async function archiverCamion(req, res, next) {
     try {
-        const camion = camionService.archiverCamion(req.params)
+        const camion = await camionService.archiverCamion(req.params.id)
         res.status(200).json({ statut: 'success', CamionArchive: camion })
     }catch(err){
         next(err)

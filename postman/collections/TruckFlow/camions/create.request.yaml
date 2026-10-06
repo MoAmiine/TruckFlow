@@ -1,0 +1,23 @@
+$kind: http-request
+url: http://localhost:5001/api/v1/camions
+method: POST
+headers:
+  Authorization: "{{bearer_token_0g3v}}"
+body:
+  type: json
+  content: "{\r
+
+    \  \"immatriculation\": \"12345-A-26\",\r
+
+    \  \"marque\": \"Volvo\",\r
+
+    \  \"modele\": \"FH16\",\r
+
+    \  \"kilometrageActuel\": 50000,\r
+
+    \  \"seuilVidangeKm\": 10000,\r
+
+    \  \"seuilRevisionKm\": 30000\r
+
+    }"
+order: 1791298720931
