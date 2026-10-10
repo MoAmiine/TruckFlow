@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const camionRoutes = require('./routes/camion.routes.js');
 const remorqueRoutes = require('./routes/remorque.routes.js');
+const pneuRoutes = require('./routes/pneu.routes.js');
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/camions', camionRoutes);   
 app.use('/api/v1/remorques', remorqueRoutes);
+app.use('api/v1/pneus', pneuRoutes);
 app.use(errorHandler);
 
 
