@@ -3,6 +3,8 @@ const availabilityService = require('./availability.service');
 const ApiError = require('../utils/apiError');
 const User = require('../models/User');
 const Camion = require('../models/Camion');
+const Remorque = require('../models/Remorque');
+const calculationService = require('./calculation.service');
 
 async function createTrajet(data) {
     const available = await availabilityService.verifierDisponibilite(
@@ -60,11 +62,8 @@ async function cloturerTrajet(trajetId, saisieData, user) {
         throw new ApiError('Bad request', 400);
     }
 
-    const distance = saisieData.kilometrageArrivee - saisieData.kilometrageDepart;
-    let consommationMoyenne = 0;
-    if (distance > 0 && saisieData.volumeGasoil > 0) {
-        consommationMoyenne = Number(((saisieData.volumeGasoil / distance) * 100).toFixed(2));
-    }
+    const distance = calculationService.calculerDistance(saisieData.kilometrageDepart, saisieData.kilometrageArrivee)
+    const consommationMoyenne = calculationService.calculerConsommationMoyenne(saisieData.volumeGasoil, distance)
 
     trajet.kilometrageDepart = saisieData.kilometrageDepart;
     trajet.kilometrageArrivee = saisieData.kilometrageArrivee;
@@ -79,6 +78,11 @@ async function cloturerTrajet(trajetId, saisieData, user) {
         statut: 'disponible',
         kilometrageActuel: saisieData.kilometrageArrivee
     });
+    await Remorque.findByIdAndUpdate(trajet.remorqueId, {
+        statut: 'disponible',
+    })
+
+    return trajet;
 }
 
 module.exports = {
