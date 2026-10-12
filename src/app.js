@@ -7,6 +7,9 @@ const camionRoutes = require('./routes/camion.routes.js');
 const remorqueRoutes = require('./routes/remorque.routes.js');
 const pneuRoutes = require('./routes/pneu.routes.js');
 const trajetRoutes = require('./routes/trajet.routes');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./docs/swagger.yaml');
 
 const app = express();
 app.use(express.json());
@@ -22,6 +25,7 @@ app.use('/api/v1/camions', camionRoutes);
 app.use('/api/v1/remorques', remorqueRoutes);
 app.use('/api/v1/pneus', pneuRoutes);
 app.use('/api/v1/trajets', trajetRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(errorHandler);
 
 
