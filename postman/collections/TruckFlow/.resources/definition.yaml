@@ -15,3 +15,9 @@ variables:
   - key: json_web_token_12wx
     secret: true
     disabled: false
+  - key: bearer_token_11p7
+    secret: true
+    disabled: false
+  - key: json_web_token_0oyv
+    secret: true
+    disabled: false
