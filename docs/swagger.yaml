@@ -367,3 +367,38 @@ paths:
           description: Détails du trajet.
         403:
           description: Chauffeur non autorisé à voir le trajet d'un autre chauffeur.
+          
+  /api/v1/trajets/{id}/cloturer:
+    patch:
+      summary: Clôturer un trajet (Chauffeur assigné ou Admin)
+      tags: [Trajets]
+      description: Saisie du kilométrage réel, volume de carburant, calcul automatique de la consommation moyenne et libération du camion et de la remorque.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kilometrageDepart, kilometrageArrivee, volumeGasoil]
+              properties:
+                kilometrageDepart: { type: number, example: 150200 }
+                kilometrageArrivee: { type: number, example: 150650 }
+                volumeGasoil: { type: number, example: 120 }
+                coutGasoil: { type: number, example: 1500 }
+                remarques: { type: string, example: "Livraison effectuée à temps, météo dégagée" }
+      responses:
+        200:
+          description: Trajet clôturé avec succès.
+        400:
+          description: Le kilométrage d'arrivée doit être strictement supérieur au départ (HTTP 400).
+        403:
+          description: Non autorisé (seul le chauffeur assigné ou l'admin peut clôturer).
+        404:
+          description: Trajet introuvable.
+        409:
+          description: Ce trajet est déjà clôturé.
