@@ -37,8 +37,21 @@ async function getTrajetById(req, res, next) {
   }
 }
 
+async function cloturerTrajet(req, res, next){
+  try{
+    const trajet = await trajetService.cloturerTrajet(req.params.id, req.body, req.user)
+    res.status(200).json({
+      status:'success',
+      data: trajet
+    });
+  }catch(err){
+    next(err);
+  }
+}
+
 module.exports = {
   createTrajet,
   getAllTrajets,
-  getTrajetById
+  getTrajetById,
+  cloturerTrajet
 };
