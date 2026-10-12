@@ -1,0 +1,369 @@
+openapi: 3.0.0
+info:
+  title: TruckFlow API — Gestion de Flotte de Transport Routier
+  description: API RESTful pour la gestion des camions, remorques, pneus, chauffeurs et trajets (Youssoufia).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5001
+    description: Serveur de Développement Local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ==========================================
+  # AUTHENTICATION
+  # ==========================================
+  /api/v1/auth/register:
+    post:
+      summary: Inscription / Création de compte (Admin ou Chauffeur)
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nom, prenom, email, motDePasse]
+              properties:
+                nom: { type: string, example: "Teljaoui" }
+                prenom: { type: string, example: "Mohamed Amine" }
+                email: { type: string, example: "admin@truckflow.com" }
+                motDePasse: { type: string, example: "admin123456" }
+                role: { type: string, enum: [admin, chauffeur], default: chauffeur }
+      responses:
+        201:
+          description: Utilisateur créé avec succès.
+        400:
+          description: Données invalides ou email déjà utilisé.
+
+  /api/v1/auth/login:
+    post:
+      summary: Connexion et obtention des Tokens JWT
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: "admin@truckflow.com" }
+                password: { type: string, example: "admin123456" }
+      responses:
+        200:
+          description: Connexion réussie (retourne accessToken + refreshToken).
+        401:
+          description: Identifiants incorrects.
+        403:
+          description: Compte chauffeur suspendu.
+
+  # ==========================================
+  # CHAUFFEURS (ADMIN ONLY)
+  # ==========================================
+  /api/v1/users/chauffeurs:
+    post:
+      summary: Créer un compte chauffeur (Admin uniquement)
+      tags: [Chauffeurs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nom, prenom, email, motDePasse]
+              properties:
+                nom: { type: string, example: "Bennani" }
+                prenom: { type: string, example: "Karim" }
+                email: { type: string, example: "karim@truckflow.com" }
+                motDePasse: { type: string, example: "karim123456" }
+      responses:
+        201:
+          description: Chauffeur créé avec rôle chauffeur et statut actif.
+        403:
+          description: Accès interdit (seul l'admin est autorisé).
+    get:
+      summary: Lister tous les chauffeurs (Admin uniquement)
+      tags: [Chauffeurs]
+      responses:
+        200:
+          description: Liste des chauffeurs.
+
+  /api/v1/users/chauffeurs/{id}/statut:
+    patch:
+      summary: Suspendre ou réactiver un chauffeur (Admin uniquement)
+      tags: [Chauffeurs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [statut]
+              properties:
+                statut: { type: string, enum: [actif, suspendu], example: "suspendu" }
+      responses:
+        200:
+          description: Statut mis à jour avec succès.
+
+  # ==========================================
+  # CAMIONS (ADMIN ONLY)
+  # ==========================================
+  /api/v1/camions:
+    post:
+      summary: Ajouter un camion à la flotte (Admin uniquement)
+      tags: [Camions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [immatriculation, marque, modele]
+              properties:
+                immatriculation: { type: string, example: "12345-A-26" }
+                marque: { type: string, example: "Volvo" }
+                modele: { type: string, example: "FH16" }
+                kilometrageActuel: { type: number, default: 0 }
+                seuilVidangeKm: { type: number, default: 10000 }
+                seuilRevisionKm: { type: number, default: 30000 }
+      responses:
+        201:
+          description: Camion ajouté.
+    get:
+      summary: Lister tous les camions actifs (non archivés)
+      tags: [Camions]
+      responses:
+        200:
+          description: Liste des camions.
+
+  /api/v1/camions/{id}:
+    get:
+      summary: Obtenir les détails d'un camion par son ID
+      tags: [Camions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Détails du camion.
+    put:
+      summary: Mettre à jour les informations d'un camion
+      tags: [Camions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                marque: { type: string }
+                modele: { type: string }
+      responses:
+        200:
+          description: Camion mis à jour.
+
+  /api/v1/camions/{id}/archive:
+    patch:
+      summary: Archiver un camion (Soft Delete)
+      tags: [Camions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Camion archivé.
+
+  # ==========================================
+  # REMORQUES (ADMIN ONLY)
+  # ==========================================
+  /api/v1/remorques:
+    post:
+      summary: Ajouter une remorque (Admin uniquement)
+      tags: [Remorques]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [immatriculation, type, capaciteCharge]
+              properties:
+                immatriculation: { type: string, example: "R-9988-26" }
+                type: { type: string, enum: [citerne, plateau, benne, frigo], example: "citerne" }
+                capaciteCharge: { type: number, example: 25000 }
+      responses:
+        201:
+          description: Remorque ajoutée.
+    get:
+      summary: Lister toutes les remorques actives
+      tags: [Remorques]
+      responses:
+        200:
+          description: Liste des remorques.
+
+  /api/v1/remorques/{id}:
+    get:
+      summary: Détails d'une remorque par ID
+      tags: [Remorques]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Détails de la remorque.
+
+  /api/v1/remorques/{id}/archive:
+    patch:
+      summary: Archiver une remorque (Soft Delete)
+      tags: [Remorques]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Remorque archivée.
+
+  # ==========================================
+  # PNEUS (ADMIN ONLY)
+  # ==========================================
+  /api/v1/pneus:
+    post:
+      summary: Enregistrer un pneu dans le stock (Admin uniquement)
+      tags: [Pneus]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [numeroSerie]
+              properties:
+                numeroSerie: { type: string, example: "MICHELIN-2026-001" }
+                seuilUsureKm: { type: number, default: 40000 }
+      responses:
+        201:
+          description: Pneu créé dans le stock.
+    get:
+      summary: Lister tous les pneus
+      tags: [Pneus]
+      responses:
+        200:
+          description: Liste des pneus avec camion associé (populé).
+
+  /api/v1/pneus/{id}/associer:
+    patch:
+      summary: Associer un pneu à un camion et une position (Admin uniquement)
+      tags: [Pneus]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [camionId, position]
+              properties:
+                camionId: { type: string, example: "670c..." }
+                position: { type: string, example: "avant_gauche" }
+      responses:
+        200:
+          description: Pneu monté sur le camion.
+        400:
+          description: Position déjà occupée ou pneu à remplacer.
+
+  /api/v1/pneus/{id}/desassocier:
+    patch:
+      summary: Détacher un pneu du camion vers le stock
+      tags: [Pneus]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Pneu détaché.
+
+  # ==========================================
+  # TRAJETS (ADMIN & CHAUFFEURS)
+  # ==========================================
+  /api/v1/trajets:
+    post:
+      summary: Créer et assigner un trajet (Admin uniquement)
+      tags: [Trajets]
+      description: Vérifie automatiquement la disponibilité (Camion, Remorque, Chauffeur) via AvailabilityService (DRY).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [siteDepart, siteArrivee, marchandise, dateDepartPrevue, dateArriveePrevue, chauffeurId, camionId, remorqueId]
+              properties:
+                siteDepart: { type: string, example: "Youssoufia - Entrepôt Central" }
+                siteArrivee: { type: string, example: "Casablanca - Port" }
+                marchandise: { type: string, example: "Phosphate" }
+                dateDepartPrevue: { type: string, format: date-time, example: "2026-10-15T08:00:00.000Z" }
+                dateArriveePrevue: { type: string, format: date-time, example: "2026-10-15T18:00:00.000Z" }
+                chauffeurId: { type: string, example: "670c..." }
+                camionId: { type: string, example: "670c..." }
+                remorqueId: { type: string, example: "670c..." }
+      responses:
+        201:
+          description: Trajet créé au statut a_faire.
+        409:
+          description: Conflit horaire ou ressource occupée / en maintenance (HTTP 409).
+    get:
+      summary: Lister les trajets (Admin voit tout, Chauffeur voit ses trajets)
+      tags: [Trajets]
+      responses:
+        200:
+          description: Liste des trajets.
+
+  /api/v1/trajets/{id}:
+    get:
+      summary: Détails d'un trajet par ID
+      tags: [Trajets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Détails du trajet.
+        403:
+          description: Chauffeur non autorisé à voir le trajet d'un autre chauffeur.
