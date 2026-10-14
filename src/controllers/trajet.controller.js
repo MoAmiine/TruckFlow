@@ -1,3 +1,4 @@
+const Trajet = require('../models/Trajet');
 const trajetService = require('../services/trajet.service');
 
 async function createTrajet(req, res, next) {
@@ -44,6 +45,18 @@ async function cloturerTrajet(req, res, next){
       status:'success',
       data: trajet
     });
+  }catch(err){
+    next(err);
+  }
+}
+
+async function demarerTrajet(req, res, next){
+  try{
+    const trajet = await trajetService.demarerTrajet(req.params.id)
+    res.status(200).json({
+      statut: "sucess",
+      message: 'trajet demarre'
+    })
   }catch(err){
     next(err);
   }

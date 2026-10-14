@@ -30,6 +30,9 @@ async function updateCamion(id, data){
 
 async function archiverCamion(id){
     const camion = await Camion.findByIdAndUpdate(id, { statut: 'archive' }, {new: true});
+    if(!camion){
+        throw new ApiError('Camion not found', 404)
+    }
     return camion;
 }
 

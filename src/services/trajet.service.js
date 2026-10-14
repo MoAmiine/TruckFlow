@@ -58,6 +58,9 @@ async function cloturerTrajet(trajetId, saisieData, user) {
     if (trajet.statut === 'termine') {
         throw new ApiError('trajet deja termine', 409);
     }
+    if (trajet.statut === 'a_faire') {
+        throw new ApiError('trajet pas commence', 409)
+    }
     if (saisieData.kilometrageArrivee <= saisieData.kilometrageDepart) {
         throw new ApiError('Bad request', 400);
     }
@@ -81,6 +84,32 @@ async function cloturerTrajet(trajetId, saisieData, user) {
     await Remorque.findByIdAndUpdate(trajet.remorqueId, {
         statut: 'disponible',
     })
+
+    return trajet;
+}
+
+async function demarrerTrajet(id, user, kilometrageDepart = null) {
+    const trajet = await Trajet.findById(id);
+    if (!trajet) {
+        throw new ApiError('Trajet introuvable', 404);
+    }
+
+    if (user.role === 'chauffeur' && trajet.chauffeurId.toString() !== user.id.toString()) {
+        throw new ApiError('Accès non autorisé à ce trajet', 403);
+    }
+
+    if (trajet.statut !== 'a_faire') {
+        throw new ApiError("Le trajet ne peut être démarré que s'il est au statut 'a_faire'", 400);
+    }
+
+    trajet.statut = 'en_cours';
+    if (kilometrageDepart) {
+        trajet.kilometrageDepart = kilometrageDepart;
+    }
+    await trajet.save();
+
+    await Camion.findByIdAndUpdate(trajet.camionId, { statut: 'en_mission' });
+    await Remorque.findByIdAndUpdate(trajet.remorqueId, { statut: 'en_mission' });
 
     return trajet;
 }

@@ -20,4 +20,4 @@ async function register(req, res, next) {
     }
 }
 
-module.exports = { login, register }
+module.exports = { login, register }   

@@ -10,24 +10,19 @@ async function verifierDisponibilite(camionId, remorqueId, chauffeurId, dateDebu
     const remorque = await Remorque.findById(remorqueId);
     const chauffeur = await User.findById(chauffeurId);
     const pneuAlerte = await Pneu.findOne({ camionId, etat: 'a_remplacer' });
-    const chauffeurOccupe = await Trajet.findOne({
-        chauffeurId,
+    const filtreDate = {
         statut: { $in: ['a_faire', 'en_cours'] },
         dateDepartPrevue: { $lte: new Date(dateFin) },
         dateArriveePrevue: { $gte: new Date(dateDebut) }
-    });
-    const camionOccupe = await Trajet.findOne({
-        camionId,
-        statut: { $in: ['a_faire', 'en_cours'] },
-        dateDepartPrevue: { $lte: new Date(dateFin) },
-        dateArriveePrevue: { $gte: new Date(dateDebut) }
-    });
-    const remorqueOccupee = await Trajet.findOne({
-        remorqueId,
-        statut: { $in: ['a_faire', 'en_cours'] },
-        dateDepartPrevue: { $lte: new Date(dateFin) },
-        dateArriveePrevue: { $gte: new Date(dateDebut) }
-    });
+    };
+
+    if (trajetIdAExclure) {
+        filtreDate._id = { $ne: trajetIdAExclure };
+    }
+
+    const chauffeurOccupe = await Trajet.findOne({ chauffeurId, ...filtreDate });
+    const camionOccupe = await Trajet.findOne({ camionId, ...filtreDate });
+    const remorqueOccupee = await Trajet.findOne({ remorqueId, ...filtreDate });
 
     if (!chauffeur) {
         throw new ApiError('chauffeur introuvable', 404)

@@ -12,6 +12,6 @@ router.post('/', restrictTo('admin'), validate(createTrajetSchema), trajetContro
 router.get('/', trajetController.getAllTrajets);
 router.get('/:id', trajetController.getTrajetById);
 router.patch('/:id/cloturer', restrictTo('admin', 'chauffeur'), validate(cloturerTrajetSchema), trajetController.cloturerTrajet);
-
+router.put('/:id/demarrer' , trajetController.demarerTrajet);
 
 module.exports = router;
