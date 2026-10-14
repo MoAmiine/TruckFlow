@@ -52,6 +52,20 @@ async function desassocierPneu(pneuId){
     return pneu;
 }
 
+async function actualiserKilometragePneus(camionId, distanceParcourue) {
+    const pneus = await Pneu.find({ camionId });
+    for (const pneu of pneus) {
+        pneu.kilometrageActuel += distanceParcourue;
+        if (pneu.kilometrageActuel >= pneu.seuilUsureKm) {
+            pneu.etat = 'a_remplacer';
+        }
+        await pneu.save();
+    }
+}
+
+async function getAlertesPneus() {
+    return await Pneu.find({ etat: 'a_remplacer' }).populate('camionId', 'immatriculation marque');
+}
 
 module.exports = { 
     createPneu, 

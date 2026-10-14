@@ -67,7 +67,7 @@ async function cloturerTrajet(trajetId, saisieData, user) {
 
     const distance = calculationService.calculerDistance(saisieData.kilometrageDepart, saisieData.kilometrageArrivee)
     const consommationMoyenne = calculationService.calculerConsommationMoyenne(saisieData.volumeGasoil, distance)
-
+    
     trajet.kilometrageDepart = saisieData.kilometrageDepart;
     trajet.kilometrageArrivee = saisieData.kilometrageArrivee;
     trajet.volumeGasoil = saisieData.volumeGasoil;
@@ -84,7 +84,8 @@ async function cloturerTrajet(trajetId, saisieData, user) {
     await Remorque.findByIdAndUpdate(trajet.remorqueId, {
         statut: 'disponible',
     })
-
+    await pneuService.actualiserKilometragePneus(trajet.camionId, distance);
+    
     return trajet;
 }
 
