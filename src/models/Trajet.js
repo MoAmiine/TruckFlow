@@ -69,7 +69,25 @@ const trajetSchema = new mongoose.Schema(
     remarques: {
       type: String,
       default: ''
-    }
+    },
+    ordreDeMission: {
+      s3Key: {
+        type: String,
+        default: null
+      },
+      bucket: {
+        type: String,
+        default: null
+      },
+      sizeBytes: {
+        type: Number,
+        default: null
+      },
+      generatedAt: {
+        type: Date,
+        default: null
+      }
+    },
   },
   {
     timestamps: true
