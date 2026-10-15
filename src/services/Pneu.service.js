@@ -72,5 +72,7 @@ module.exports = {
     getAllPneus, 
     getPneuById, 
     associerPneuAuCamion, 
-    desassocierPneu 
+    desassocierPneu,
+    actualiserKilometragePneus,
+    getAlertesPneus            
 };

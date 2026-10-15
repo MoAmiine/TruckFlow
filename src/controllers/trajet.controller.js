@@ -38,26 +38,31 @@ async function getTrajetById(req, res, next) {
   }
 }
 
-async function cloturerTrajet(req, res, next){
-  try{
+async function cloturerTrajet(req, res, next) {
+  try {
     const trajet = await trajetService.cloturerTrajet(req.params.id, req.body, req.user)
     res.status(200).json({
-      status:'success',
+      status: 'success',
       data: trajet
     });
-  }catch(err){
+  } catch (err) {
     next(err);
   }
 }
 
-async function demarerTrajet(req, res, next){
-  try{
-    const trajet = await trajetService.demarerTrajet(req.params.id)
+async function demarrerTrajet(req, res, next) {
+  try {
+    const trajet = await trajetService.demarrerTrajet(
+      req.params.id,
+      req.user,
+      req.body.kilometrageDepart
+    );
     res.status(200).json({
-      statut: "sucess",
-      message: 'trajet demarre'
-    })
-  }catch(err){
+      status: "success",
+      message: 'Trajet démarré avec succès',
+      data: trajet
+    });
+  } catch (err) {
     next(err);
   }
 }
@@ -66,5 +71,6 @@ module.exports = {
   createTrajet,
   getAllTrajets,
   getTrajetById,
-  cloturerTrajet
+  cloturerTrajet,
+  demarrerTrajet
 };

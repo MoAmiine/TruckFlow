@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Camion = require('../models/Camion');
 const Remorque = require('../models/Remorque');
 const calculationService = require('./calculation.service');
+const pneuService = require('./Pneu.service'); 
 
 async function createTrajet(data) {
     const available = await availabilityService.verifierDisponibilite(
@@ -119,5 +120,6 @@ module.exports = {
     createTrajet,
     getAllTrajet,
     getTrajetById,
-    cloturerTrajet
+    cloturerTrajet,
+    demarrerTrajet 
 }
