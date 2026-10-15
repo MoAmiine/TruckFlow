@@ -7,6 +7,7 @@ const camionRoutes = require('./routes/camion.routes.js');
 const remorqueRoutes = require('./routes/remorque.routes.js');
 const pneuRoutes = require('./routes/pneu.routes.js');
 const trajetRoutes = require('./routes/trajet.routes');
+const healthRoutes = require('./routes/health.routes');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./docs/swagger.yaml');
@@ -14,6 +15,9 @@ const swaggerDocument = YAML.load('./docs/swagger.yaml');
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Health probes (Kubernetes-ready)
+app.use('/healthz', healthRoutes);
 
 app.get('/', (req, res) => {
     res.json('app is working')

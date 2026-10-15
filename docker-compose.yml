@@ -1,87 +1,102 @@
 services:
-  mongodb:
-    image: mongo:6.0
-    container_name: truckflow_mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   api:
     build: .
     container_name: truckflow_api
     ports:
       - "5001:5001"
+    env_file:
+      - .env
     environment:
-      - PORT=5001
-      - MONGO_URI=mongodb://mongodb:27017/truckflow
-      - JWT_SECRET=votre_secret_key
-      - JWT_REFRESH_SECRET=votre_refresh_secret
-      - REDIS_URL=redis://redis:6379
-      - MINIO_ENDPOINT=minio
-      - MINIO_PORT=9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadminpassword
-      - MINIO_BUCKET_NAME=truckflow-documents
+      PORT: 5001
+      MONGO_URI: mongodb://mongo:27017/truckflow
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
+      S3_BUCKET: fleettrack-documents
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
     depends_on:
-      mongodb:
+      mongo:
         condition: service_healthy
-      # redis:
-      #   condition: service_healthy
-      # minio:
-      #   condition: service_healthy
-        
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5001/healthz/liveness').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
 
-    
-    
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: truckflow_redis
-  #   ports:
-  #     - "6379:6379"
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 5
+  mongo:
+    image: mongo:6.0
+    container_name: truckflow_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "db.adminCommand('ping').ok"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: truckflow_redis
+    command:
+      - sh
+      - -c
+      - 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
-  # minio:
-  #   image: minio/minio:latest
-  #   container_name: truckflow_minio
-  #   command: server /data --console-address ":9001"
-  #   ports:
-  #     - "9000:9000"   
-  #     - "9001:9001" 
-  #   environment:
-  #     MINIO_ROOT_USER: minioadmin
-  #     MINIO_ROOT_PASSWORD: minioadminpassword
-  #   volumes:
-  #     - minio_data:/data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-  # createbuckets:
-  #   image: minio/mc:latest
-  #   container_name: truckflow_createbuckets
-  #   depends_on:
-  #     minio:
-  #       condition: service_healthy
-  #   entrypoint: >
-  #     /bin/sh -c "
-  #     /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadminpassword;
-  #     /usr/bin/mc mb myminio/truckflow-documents --ignore-existing;
-  #     exit 0;
-  #     "
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: truckflow_minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   mongo_data:
-  # minio_data:
+  redis_data:
+  minio_data:
