@@ -134,10 +134,31 @@ async function demarrerTrajet(id, user, kilometrageDepart = null) {
     return trajet;
 }
 
+async function getMissionOrderUrl(trajetId, user) {
+    const trajet = await Trajet.findById(trajetId)
+    if (!trajet) {
+        throw new ApiError('trajet not found', 404)
+    }
+    if (user.role === 'chauffeur' && trajet.chauffeurId.toString() !== user.id.toString()) {
+        throw new ApiError('Accès non autorisé à ce document', 403);
+    }
+    if (!trajet.ordreDeMission || !trajet.ordreDeMission.s3Key) {
+        throw new ApiError('Ordre de mission introuvable pour ce trajet', 404);
+    }
+
+    const downloadUrl = await storageService.generatePresignedUrl(trajet.ordreDeMission.s3Key, 900);
+    return {
+        trajetId: trajet._id,
+        downloadUrl,
+        expiresInSeconds: 900
+    }
+}
+
 module.exports = {
     createTrajet,
     getAllTrajet,
     getTrajetById,
     cloturerTrajet,
-    demarrerTrajet
+    demarrerTrajet,
+    getMissionOrderUrl
 }

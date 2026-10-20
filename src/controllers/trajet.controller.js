@@ -67,10 +67,23 @@ async function demarrerTrajet(req, res, next) {
   }
 }
 
+async function getMissionOrderUrl(req, res, next) {
+  try {
+    const result = await trajetService.getMissionOrderUrl(req.params.id, req.user);
+    res.status(200).json({
+      status: 'success',
+      data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   createTrajet,
   getAllTrajets,
   getTrajetById,
   cloturerTrajet,
-  demarrerTrajet
+  demarrerTrajet,
+  getMissionOrderUrl
 };

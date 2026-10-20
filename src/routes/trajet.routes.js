@@ -13,4 +13,5 @@ router.get('/', trajetController.getAllTrajets);
 router.get('/:id', trajetController.getTrajetById);
 router.patch('/:id/cloturer', restrictTo('admin', 'chauffeur'), validate(cloturerTrajetSchema), trajetController.cloturerTrajet);
 router.patch('/:id/demarrer', restrictTo('admin', 'chauffeur'), trajetController.demarrerTrajet);
+router.get('/:id/mission-order-url', restrictTo('admin', 'chauffeur'), trajetController.getMissionOrderUrl)
 module.exports = router;
