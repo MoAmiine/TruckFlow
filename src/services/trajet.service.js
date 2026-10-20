@@ -5,7 +5,9 @@ const User = require('../models/User');
 const Camion = require('../models/Camion');
 const Remorque = require('../models/Remorque');
 const calculationService = require('./calculation.service');
-const pneuService = require('./Pneu.service'); 
+const pneuService = require('./Pneu.service');
+const pdfService = require('./pdf.service');
+const storageService = require('./storage.service');
 
 async function createTrajet(data) {
     const available = await availabilityService.verifierDisponibilite(
@@ -17,6 +19,22 @@ async function createTrajet(data) {
     )
     if (available) {
         const trajet = await Trajet.create(data)
+        const trajetPopule = await Trajet.findById(trajet._id)
+            .populate('chauffeurId', 'nom prenom')
+            .populate('camionId', 'immatriculation marque modele')
+            .populate('remorqueId', 'immatriculation type');
+        const pdfBuffer = await pdfService.genererOrdreDeMission(trajetPopule);
+        const uploadResults = await storageService.uploadMissionOrder(pdfBuffer, trajet._id);
+
+        trajet.ordreDeMission = {
+            s3Key: uploadResults.s3Key,
+            bucket: uploadResults.bucket,
+            sizeBytes: uploadResults.sizeBytes,
+            generatedAt: new Date()
+        };
+
+        await trajet.save();
+
         return trajet
     }
 }
@@ -68,7 +86,7 @@ async function cloturerTrajet(trajetId, saisieData, user) {
 
     const distance = calculationService.calculerDistance(saisieData.kilometrageDepart, saisieData.kilometrageArrivee)
     const consommationMoyenne = calculationService.calculerConsommationMoyenne(saisieData.volumeGasoil, distance)
-    
+
     trajet.kilometrageDepart = saisieData.kilometrageDepart;
     trajet.kilometrageArrivee = saisieData.kilometrageArrivee;
     trajet.volumeGasoil = saisieData.volumeGasoil;
@@ -86,7 +104,7 @@ async function cloturerTrajet(trajetId, saisieData, user) {
         statut: 'disponible',
     })
     await pneuService.actualiserKilometragePneus(trajet.camionId, distance);
-    
+
     return trajet;
 }
 
@@ -121,5 +139,5 @@ module.exports = {
     getAllTrajet,
     getTrajetById,
     cloturerTrajet,
-    demarrerTrajet 
+    demarrerTrajet
 }
