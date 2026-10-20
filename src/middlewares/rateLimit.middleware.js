@@ -1,7 +1,6 @@
 const { rateLimit } = require('express-rate-limit');
 const { RedisStore } = require('rate-limit-redis');
 const redisClient = require('../config/redis');
-const { default: slowDown } = require('express-slow-down');
 
 
 function createRedisStore(prefix) {
@@ -50,19 +49,9 @@ const analyticsLimiter = rateLimit({
     }
 })
 
-const speedLimiter = slowDown({
-    windowMs: 15 * 60 * 1000,
-    delayAfter: 50,
-    delayMs: (used, req) => (used - req.slowDown.limit) * 150,
-    maxDelayMs: 2000,
-    standardHeaders: true,
-    legacyHeaders: false,
-    store: createRedisStore('slowdown')
-})
 
 module.exports = {
     globalApiLimiter,
     authApiLimiter,
     analyticsLimiter,
-    speedLimiter
 }; 

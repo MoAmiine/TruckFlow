@@ -13,6 +13,7 @@ const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./docs/swagger.yaml');
 const { v1Governance, v2Governance } = require('./middlewares/governance.middleware');
 const v2Routes = require('./routes/v2');
+const { globalApiLimiter, authApiLimiter, analyticsLimiter } = require('./middlewares/rateLimit.middleware');
 
 const app = express();
 app.use(express.json());
@@ -25,14 +26,16 @@ app.get('/', (req, res) => {
     res.json('app is working')
 })
 
+app.use('/api', globalApiLimiter);
 app.use('/api/v1', v1Governance);
-app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/auth', authApiLimiter, authRoutes);
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/camions', camionRoutes);   
+app.use('/api/v1/camions', camionRoutes);
 app.use('/api/v1/remorques', remorqueRoutes);
 app.use('/api/v1/pneus', pneuRoutes);
 app.use('/api/v1/trajets', trajetRoutes);
 app.use('/api/v2', v2Governance, v2Routes);
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(errorHandler);
 
