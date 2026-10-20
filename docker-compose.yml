@@ -12,7 +12,7 @@ services:
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       S3_ENDPOINT: http://minio:9000
       S3_PUBLIC_ENDPOINT: http://localhost:9000
-      S3_BUCKET: fleettrack-documents
+      S3_BUCKET: truckflow-documents
       S3_REGION: us-east-1
       S3_ACCESS_KEY: ${MINIO_ROOT_USER}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
