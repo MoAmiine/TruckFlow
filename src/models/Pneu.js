@@ -36,4 +36,7 @@ const pneuSchema = new mongoose.Schema(
   }
 );
 
+pneuSchema.index({ camionId: 1, etat: 1 });
+pneuSchema.index({ kilometrageActuel: 1, seuilUsureKm: 1 });
+
 module.exports = mongoose.model('Pneu', pneuSchema);

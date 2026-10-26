@@ -5,3 +5,4 @@ dist/
 coverage/
 *.log
 GEMINI.md
+docs/AGGREGATION_FRAMEWORK_GUIDE.md
