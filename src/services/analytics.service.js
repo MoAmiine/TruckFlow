@@ -141,12 +141,8 @@ async function getDriversEcoPerformance() {
     };
 }
 
-/**
- * 2.2 Matrice Prédictive d'Usure des Pneumatiques & Risque Flotte ($bucket)
- * GET /api/v2/analytics/tires/health-matrix
- */
 async function getTiresHealthMatrix() {
-    const PRIX_UNITAIRE_PNEU = 3500; // 3500 DH
+    const PRIX_UNITAIRE_PNEU = 3500; 
 
     const result = await Pneu.aggregate([
         {

@@ -17,7 +17,16 @@ const { globalApiLimiter, authApiLimiter, analyticsLimiter } = require('./middle
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: (origin, callback) => {
+        // Autoriser les requêtes sans origine (Postman, curl) et toutes les origines locales de dév (Vite, etc.)
+        if (!origin) return callback(null, true);
+        return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.set('trust proxy', 1);
 
 app.use('/healthz', healthRoutes);

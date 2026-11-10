@@ -2,11 +2,13 @@ const authService = require('../../src/services/auth.service');
 const User = require('../../src/models/User');
 const tokenUtil = require('../../src/utils/token.util');
 const ApiError = require('../../src/utils/apiError');
+const jwt = require('jsonwebtoken');
 
 jest.mock('../../src/models/User');
 jest.mock('../../src/utils/token.util');
+jest.mock('jsonwebtoken');
 
-describe('AuthService - Tests Unitaires (Register, Login, Tokens)', () => {
+describe('AuthService - Tests Unitaires (Register, Login, Tokens, Me, Refresh, Logout)', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -19,7 +21,8 @@ describe('AuthService - Tests Unitaires (Register, Login, Tokens)', () => {
                 nom: 'Alami',
                 prenom: 'Karim',
                 email: 'karim@test.com',
-                role: 'chauffeur'
+                role: 'chauffeur',
+                statut: 'actif'
             };
             User.create.mockResolvedValue(mockUser);
 
@@ -46,7 +49,7 @@ describe('AuthService - Tests Unitaires (Register, Login, Tokens)', () => {
     });
 
     describe('login', () => {
-        it('doit authentifier et générer accessToken et refreshToken', async () => {
+        it('doit authentifier et générer accessToken et refreshToken avec identité', async () => {
             const mockUser = {
                 _id: 'user1',
                 nom: 'Alami',
@@ -66,6 +69,8 @@ describe('AuthService - Tests Unitaires (Register, Login, Tokens)', () => {
             expect(mockUser.comparerMotDePasse).toHaveBeenCalledWith('plainPassword');
             expect(result).toHaveProperty('accessToken', 'access_token_jwt');
             expect(result).toHaveProperty('refreshToken', 'refresh_token_jwt');
+            expect(result).toHaveProperty('role', 'chauffeur');
+            expect(result).toHaveProperty('id', 'user1');
             expect(mockUser.save).toHaveBeenCalled();
         });
 
@@ -102,6 +107,74 @@ describe('AuthService - Tests Unitaires (Register, Login, Tokens)', () => {
             await expect(
                 authService.login('karim@test.com', 'password')
             ).rejects.toThrow(ApiError);
+        });
+    });
+
+    describe('getMe', () => {
+        it('doit retourner le profil utilisateur sans mot de passe', async () => {
+            const mockUser = {
+                _id: 'user1',
+                nom: 'Super',
+                prenom: 'Admin',
+                email: 'admin@truckflow.com',
+                role: 'admin',
+                statut: 'actif'
+            };
+            User.findById.mockReturnValue({
+                select: jest.fn().mockResolvedValue(mockUser)
+            });
+
+            const result = await authService.getMe('user1');
+            expect(result).toEqual(mockUser);
+        });
+
+        it('doit rejeter avec 404 si l’utilisateur n’est pas trouvé', async () => {
+            User.findById.mockReturnValue({
+                select: jest.fn().mockResolvedValue(null)
+            });
+
+            await expect(authService.getMe('inconnu')).rejects.toThrow(ApiError);
+        });
+    });
+
+    describe('refreshToken', () => {
+        it('doit renouveler l’accessToken avec un refreshToken valide', async () => {
+            jwt.verify.mockReturnValue({ id: 'user1' });
+            const mockUser = {
+                _id: 'user1',
+                refreshToken: 'valid_refresh_token',
+                statut: 'actif'
+            };
+            User.findById.mockResolvedValue(mockUser);
+            tokenUtil.generateAccessToken.mockReturnValue('new_access_token');
+
+            const result = await authService.refreshToken('valid_refresh_token');
+            expect(result).toHaveProperty('accessToken', 'new_access_token');
+        });
+
+        it('doit rejeter avec 400 si aucun token n’est fourni', async () => {
+            await expect(authService.refreshToken(null)).rejects.toThrow(ApiError);
+        });
+
+        it('doit rejeter avec 401 si le refreshToken est révoqué ou ne correspond pas', async () => {
+            jwt.verify.mockReturnValue({ id: 'user1' });
+            const mockUser = {
+                _id: 'user1',
+                refreshToken: 'another_token',
+                statut: 'actif'
+            };
+            User.findById.mockResolvedValue(mockUser);
+
+            await expect(authService.refreshToken('invalid_token')).rejects.toThrow(ApiError);
+        });
+    });
+
+    describe('logout', () => {
+        it('doit révoquer le refreshToken en base de données', async () => {
+            User.findByIdAndUpdate.mockResolvedValue(true);
+            const result = await authService.logout('user1');
+            expect(User.findByIdAndUpdate).toHaveBeenCalledWith('user1', { refreshToken: null });
+            expect(result).toBe(true);
         });
     });
 });

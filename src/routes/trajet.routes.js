@@ -6,12 +6,16 @@ const { restrictTo } = require('../middlewares/role.middleware');
 const { validate } = require('../middlewares/validate.middleware');
 const { createTrajetSchema, cloturerTrajetSchema } = require('../validations/trajet.validation');
 
-
 router.use(verifyAccessToken);
+
+// Endpoint explicite pour les trajets du chauffeur connecté
+router.get('/mes-trajets', restrictTo('chauffeur', 'admin'), trajetController.getAllTrajets);
+
 router.post('/', restrictTo('admin'), validate(createTrajetSchema), trajetController.createTrajet);
 router.get('/', trajetController.getAllTrajets);
 router.get('/:id', trajetController.getTrajetById);
 router.patch('/:id/cloturer', restrictTo('admin', 'chauffeur'), validate(cloturerTrajetSchema), trajetController.cloturerTrajet);
 router.patch('/:id/demarrer', restrictTo('admin', 'chauffeur'), trajetController.demarrerTrajet);
-router.get('/:id/mission-order-url', restrictTo('admin', 'chauffeur'), trajetController.getMissionOrderUrl)
+router.get('/:id/mission-order-url', restrictTo('admin', 'chauffeur'), trajetController.getMissionOrderUrl);
+
 module.exports = router;

@@ -63,11 +63,116 @@ paths:
                 password: { type: string, example: "admin123456" }
       responses:
         200:
-          description: Connexion réussie (retourne accessToken + refreshToken).
+          description: Connexion réussie (retourne { id, nom, prenom, email, role, statut, accessToken, refreshToken }).
         401:
           description: Identifiants incorrects.
         403:
           description: Compte chauffeur suspendu.
+
+  /api/v1/auth/me:
+    get:
+      summary: Obtenir le profil de l'utilisateur connecté (Vérification de session)
+      tags: [Authentication]
+      responses:
+        200:
+          description: Profil retourné avec succès.
+        401:
+          description: Non authentifié ou token expiré.
+
+  /api/v1/auth/refresh:
+    post:
+      summary: Renouveler l'accessToken via un refreshToken valide
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        200:
+          description: Nouvel accessToken généré.
+        401:
+          description: Refresh token invalide ou révoqué.
+
+  /api/v1/auth/logout:
+    post:
+      summary: Déconnexion (révocation du refreshToken sur le serveur)
+      tags: [Authentication]
+      responses:
+        200:
+          description: Déconnexion réussie.
+
+  # ==========================================
+  # UTILISATEURS (ADMIN ONLY)
+  # ==========================================
+  /api/v1/users:
+    get:
+      summary: Lister tous les utilisateurs (Admins & Chauffeurs)
+      tags: [Utilisateurs]
+      responses:
+        200:
+          description: Liste de tous les utilisateurs sans mot de passe.
+        403:
+          description: Accès interdit (Admin uniquement).
+
+  /api/v1/users/{id}:
+    get:
+      summary: Obtenir un utilisateur par son ID
+      tags: [Utilisateurs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Détails de l'utilisateur.
+    put:
+      summary: Modifier les informations d'un utilisateur
+      tags: [Utilisateurs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nom: { type: string }
+                prenom: { type: string }
+      responses:
+        200:
+          description: Utilisateur mis à jour.
+
+  /api/v1/users/{id}/statut:
+    patch:
+      summary: Modifier le statut d'un utilisateur (actif / suspendu)
+      tags: [Utilisateurs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [statut]
+              properties:
+                statut: { type: string, enum: [actif, suspendu] }
+      responses:
+        200:
+          description: Statut mis à jour.
 
   # ==========================================
   # CHAUFFEURS (ADMIN ONLY)
@@ -352,6 +457,16 @@ paths:
       responses:
         200:
           description: Liste des trajets.
+
+  /api/v1/trajets/mes-trajets:
+    get:
+      summary: Obtenir les trajets du chauffeur connecté (Espace Chauffeur)
+      tags: [Trajets]
+      responses:
+        200:
+          description: Liste des trajets assignés au chauffeur connecté.
+        403:
+          description: Accès refusé si non chauffeur/admin.
 
   /api/v1/trajets/{id}:
     get:

@@ -10,7 +10,10 @@ router.use(restrictTo('admin'));
 router.post('/', camionController.createCamion);
 router.get('/', camionController.getAllCamions);
 router.get('/:id', camionController.getCamionById);
+router.put('/:id', camionController.updateCamion);
 router.put('/:id/update', camionController.updateCamion);
+router.patch('/:id', camionController.updateCamion);
 router.patch('/:id/archive', camionController.archiverCamion);
+router.delete('/:id', camionController.archiverCamion);
 
-module.exports = router
+module.exports = router;
