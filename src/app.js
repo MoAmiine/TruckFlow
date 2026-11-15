@@ -17,11 +17,19 @@ const { globalApiLimiter, authApiLimiter, analyticsLimiter } = require('./middle
 
 const app = express();
 app.use(express.json());
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
     origin: (origin, callback) => {
-        // Autoriser les requêtes sans origine (Postman, curl) et toutes les origines locales de dév (Vite, etc.)
-        if (!origin) return callback(null, true);
-        return callback(null, true);
+        // Autoriser les requêtes sans origine (Postman, curl, SSR) et les origines autorisées
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS policy: Origine ${origin} non autorisée par le serveur.`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
