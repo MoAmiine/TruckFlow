@@ -14,5 +14,6 @@ router.get('/', remorqueController.getAllRemorques);
 router.get('/:id', remorqueController.getRemorqueById);
 router.put('/:id', remorqueController.updateRemorque);
 router.patch('/:id/archive', remorqueController.archiverRemorque);
+router.delete('/:id', remorqueController.archiverRemorque);
 
 module.exports = router;
