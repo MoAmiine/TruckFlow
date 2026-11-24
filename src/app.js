@@ -20,15 +20,27 @@ app.use(express.json());
 const allowedOrigins = [
     process.env.CLIENT_URL,
     'http://localhost:5173',
-    'http://localhost:3000'
+    'http://127.0.0.1:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5174',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
 ].filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Autoriser les requêtes sans origine (Postman, curl, SSR) et les origines autorisées
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Autoriser les requêtes sans origine (Postman, curl, SSR)
+        if (!origin) return callback(null, true);
+
+        // Autoriser n'importe quel port local de dev (localhost ou 127.0.0.1)
+        if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
             return callback(null, true);
         }
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
         return callback(new Error(`CORS policy: Origine ${origin} non autorisée par le serveur.`));
     },
     credentials: true,
