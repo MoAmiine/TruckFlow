@@ -1,7 +1,7 @@
 {
   "name": "truckflow",
   "version": "2.0.0",
-  "description": "API REST Sécurisée de Gestion de Flotte de Transport Routier - FleetTrackPRO 2.0",
+  "description": "API REST Sécurisée de Gestion de Flotte de Transport Routier - TruckFlow 2.0",
   "main": "src/server.js",
   "directories": {
     "doc": "docs",
